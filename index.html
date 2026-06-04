@@ -152,56 +152,104 @@ body {
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: clamp(20px, 3vw, 48px);
-  align-items: start;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(14px, 2vw, 24px);
 }
 
-.team-member { text-align: left; }
-
-.team-photo-wrap {
-  width: clamp(110px, 16vw, 210px);
-  height: clamp(126px, 18.4vw, 240px);
-  margin-bottom: clamp(12px, 1.4vw, 20px);
-  border-radius: 8px;
+.team-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  border-radius: 12px;
   overflow: hidden;
-  border: 2px solid rgba(0,112,185,0.10);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.07), 0 2px 8px rgba(0,112,185,0.09);
-  transition: transform var(--transition), box-shadow var(--transition);
-  background: #f0f4f8;
+  border: 1.5px solid rgba(0,112,185,0.13);
+  background: var(--white);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05), 0 1px 4px rgba(0,112,185,0.07);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  min-height: clamp(130px, 14vw, 190px);
 }
-.team-photo-wrap:hover {
+.team-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 14px 32px rgba(0,0,0,0.10), 0 4px 14px rgba(0,112,185,0.14);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.09), 0 4px 14px rgba(0,112,185,0.12);
+  border-color: rgba(0,112,185,0.30);
 }
-.team-photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Photo column */
+.team-photo-col {
+  flex-shrink: 0;
+  width: clamp(90px, 11vw, 150px);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #c8dff2 0%, #ddeef8 100%);
+}
+.team-photo-col img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform 0.35s ease;
+}
+.team-card:hover .team-photo-col img { transform: scale(1.04); }
+
+/* Subtle blue accent bar on left edge of photo */
+.team-photo-col::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--blue), rgba(0,112,185,0.2));
+  z-index: 2;
+}
 
 .avatar-placeholder {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(135deg, #dde8f4 0%, #eaf2fb 100%);
 }
-.avatar-placeholder svg { width: 48%; height: 48%; opacity: 0.35; }
+.avatar-placeholder svg { width: 46%; height: 46%; opacity: 0.30; }
+
+/* Info column */
+.team-info-col {
+  flex: 1;
+  padding: clamp(16px, 1.8vw, 26px) clamp(16px, 1.8vw, 26px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  min-width: 0;
+}
 
 .team-name {
-  font-size: clamp(13px, 1.3vw, 17px);
+  font-size: clamp(13px, 1.25vw, 16px);
   font-weight: 600;
   color: var(--blue);
+  line-height: 1.2;
   margin-bottom: 5px;
-  line-height: 1.25;
 }
+
+.team-rule {
+  width: 28px;
+  height: 1.5px;
+  background: var(--blue);
+  opacity: 0.30;
+  border-radius: 2px;
+  margin-bottom: 7px;
+  flex-shrink: 0;
+}
+
 .team-title {
-  font-size: clamp(10px, 0.95vw, 13px);
+  font-size: clamp(10px, 0.9vw, 12.5px);
   font-weight: 400;
   color: var(--ink);
-  line-height: 1.55;
-  margin-bottom: clamp(10px, 1.2vw, 16px);
-  padding-right: clamp(0px, 1.2vw, 16px);
-  opacity: 0.85;
+  line-height: 1.5;
+  opacity: 0.80;
+  margin-bottom: clamp(10px, 1.4vw, 18px);
 }
+
 .contact-link {
   font-family: 'Poppins', sans-serif;
-  font-size: clamp(9px, 0.82vw, 11px);
+  font-size: clamp(9px, 0.78vw, 11px);
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -211,9 +259,11 @@ body {
   align-items: center;
   gap: 5px;
   transition: color var(--transition);
+  width: fit-content;
 }
-.contact-link:hover { color: var(--blue); text-decoration: underline; }
-.contact-link svg { width: 11px; height: 11px; opacity: 0.55; }
+.contact-link:hover { color: var(--blue); }
+.contact-link svg { width: 11px; height: 11px; opacity: 0.50; transition: opacity var(--transition); }
+.contact-link:hover svg { opacity: 1; }
 
 /* ═══════════════════════════════════════════════════════════════════
    SECTION 3 — TRAINING CALENDARS
@@ -339,8 +389,16 @@ body {
   align-items: start;
 }
 
-/* --- sticky category nav --- */
-.category-nav { position: sticky; top: 24px; }
+/* --- sticky category nav ---
+   CSS sticky doesn't work inside SharePoint iframes because the
+   scrollable viewport is the iframe element in the parent page,
+   not the document inside. JS repositions the nav on scroll instead. */
+.category-nav {
+  position: relative; /* JS upgrades this to absolute/fixed-within-container */
+  top: 0;
+  align-self: start;
+  will-change: transform;
+}
 
 .cat-nav-label {
   font-size: 10px;
@@ -492,14 +550,13 @@ body {
 /* ─── RESPONSIVE ───────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .links-grid      { grid-template-columns: repeat(2, 1fr); }
-  .team-grid       { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+  .team-grid       { grid-template-columns: 1fr; }
   .calendars-grid  { grid-template-columns: repeat(2, 1fr); }
   .glossary-layout { grid-template-columns: 1fr; }
   .category-nav    { display: none; }
 }
 @media (max-width: 520px) {
   .links-grid     { grid-template-columns: 1fr 1fr; }
-  .team-grid      { grid-template-columns: repeat(2, 1fr); }
   .calendars-grid { grid-template-columns: 1fr 1fr; }
 }
 </style>
@@ -556,56 +613,72 @@ body {
 
   <div class="team-grid">
 
-    <div class="team-member">
-      <div class="team-photo-wrap">
+    <!-- MEMBER 1 -->
+    <div class="team-card">
+      <div class="team-photo-col">
         <img src="https://static.wixstatic.com/media/4f7dd4_131128c296354e18906d4bea57d25dce~mv2.png" alt="Heather Gaff">
       </div>
-      <div class="team-name">Heather Gaff</div>
-      <div class="team-title">Senior Director of Performance &amp; Development</div>
-      <a class="contact-link" href="mailto:HGaff@TheGarrettCo.com">
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Contact Me
-      </a>
+      <div class="team-info-col">
+        <div class="team-name">Heather Gaff</div>
+        <div class="team-rule"></div>
+        <div class="team-title">Senior Director of Performance &amp; Development</div>
+        <a class="contact-link" href="mailto:HGaff@TheGarrettCo.com">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Contact Me
+        </a>
+      </div>
     </div>
 
-    <div class="team-member">
-      <div class="team-photo-wrap">
+    <!-- MEMBER 2 -->
+    <div class="team-card">
+      <div class="team-photo-col">
         <img src="https://static.wixstatic.com/media/4f7dd4_4f79e91b4272468aa7a7ba58dbff6cf1~mv2.png" alt="Becky Marks">
       </div>
-      <div class="team-name">Becky Marks</div>
-      <div class="team-title">National Performance &amp; Development Manager</div>
-      <a class="contact-link" href="mailto:bmarks@thegarrettco.com">
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Contact Me
-      </a>
+      <div class="team-info-col">
+        <div class="team-name">Becky Marks</div>
+        <div class="team-rule"></div>
+        <div class="team-title">National Performance &amp; Development Manager</div>
+        <a class="contact-link" href="mailto:bmarks@thegarrettco.com">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Contact Me
+        </a>
+      </div>
     </div>
 
-    <div class="team-member">
-      <div class="team-photo-wrap">
+    <!-- MEMBER 3 -->
+    <div class="team-card">
+      <div class="team-photo-col">
         <div class="avatar-placeholder">
           <svg viewBox="0 0 80 80" fill="none" aria-hidden="true"><circle cx="40" cy="30" r="16" stroke="#0070b9" stroke-width="3"/><path d="M10 70c0-16.57 13.43-30 30-30s30 13.43 30 30" stroke="#0070b9" stroke-width="3" stroke-linecap="round"/></svg>
         </div>
       </div>
-      <div class="team-name">Marlita Pollard</div>
-      <div class="team-title">National Centralized Customer Experience Specialist</div>
-      <a class="contact-link" href="mailto:MPollard@TheGarrettCo.com">
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Contact Me
-      </a>
+      <div class="team-info-col">
+        <div class="team-name">Marlita Pollard</div>
+        <div class="team-rule"></div>
+        <div class="team-title">National Centralized Customer Experience Specialist</div>
+        <a class="contact-link" href="mailto:MPollard@TheGarrettCo.com">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Contact Me
+        </a>
+      </div>
     </div>
 
-    <div class="team-member">
-      <div class="team-photo-wrap">
+    <!-- MEMBER 4 -->
+    <div class="team-card">
+      <div class="team-photo-col">
         <div class="avatar-placeholder">
           <svg viewBox="0 0 80 80" fill="none" aria-hidden="true"><circle cx="40" cy="30" r="16" stroke="#0070b9" stroke-width="3"/><path d="M10 70c0-16.57 13.43-30 30-30s30 13.43 30 30" stroke="#0070b9" stroke-width="3" stroke-linecap="round"/></svg>
         </div>
       </div>
-      <div class="team-name">Team Member</div>
-      <div class="team-title">National Centralized Customer Experience Specialist</div>
-      <a class="contact-link" href="mailto:name@email.com">
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Contact Me
-      </a>
+      <div class="team-info-col">
+        <div class="team-name">Team Member</div>
+        <div class="team-rule"></div>
+        <div class="team-title">National Centralized Customer Experience Specialist</div>
+        <a class="contact-link" href="mailto:name@email.com">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Contact Me
+        </a>
+      </div>
     </div>
 
   </div>
@@ -619,7 +692,7 @@ body {
   <div class="section-head">
     <h2>
       Training Calendars
-      <img class="head-icon" src="https://static.wixstatic.com/shapes/4f7dd4_e761edadbd824911b37da2d10f6aaea1.svg" alt="" aria-hidden="true">
+      <img class="head-icon" src="https://static.wixstatic.com/shapes/4f7dd4_a56482638453460d879f1d393abac2bf.svg" alt="" aria-hidden="true">
     </h2>
     <p class="section-sub">Scheduled learning sessions, live workshops, and certification tracks — plan your development path.</p>
   </div>
@@ -1001,6 +1074,49 @@ document.querySelectorAll('.cat-nav-list button[data-target]').forEach(function(
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 });
+
+/* ─── IFRAME-SAFE STICKY NAV ────────────────────────────────────────
+   position:sticky fails in SharePoint iframes because the browser's
+   scroll container is the <iframe> element in the *parent* page, not
+   the document inside it. We replicate sticky behaviour manually:
+   listen to the document's own scroll event and use translateY to
+   keep the nav pinned while the glossary section is in view.        */
+(function() {
+  var nav        = document.querySelector('.category-nav');
+  var layout     = document.querySelector('.glossary-layout');
+  var glossSect  = document.getElementById('glossary');
+  if (!nav || !layout || !glossSect) return;
+
+  var OFFSET = 24; /* px gap from top — mirrors old "top: 24px" */
+
+  function updateNav() {
+    var scrollY      = window.pageYOffset || document.documentElement.scrollTop;
+    var sectTop      = glossSect.getBoundingClientRect().top + scrollY;
+    var sectBottom   = glossSect.getBoundingClientRect().bottom + scrollY;
+    var navH         = nav.offsetHeight;
+    var viewH        = window.innerHeight;
+
+    /* Only do anything while the glossary section is on screen */
+    if (scrollY + OFFSET < sectTop) {
+      /* Above the section — reset to natural position */
+      nav.style.transform = 'translateY(0)';
+      return;
+    }
+
+    if (scrollY + OFFSET + navH > sectBottom) {
+      /* Below the section — pin to section bottom */
+      nav.style.transform = 'translateY(' + (sectBottom - sectTop - navH) + 'px)';
+      return;
+    }
+
+    /* Inside the section — follow scroll */
+    nav.style.transform = 'translateY(' + (scrollY + OFFSET - sectTop) + 'px)';
+  }
+
+  window.addEventListener('scroll', updateNav, { passive: true });
+  window.addEventListener('resize', updateNav, { passive: true });
+  updateNav();
+})();
 
 /* ─── ACTIVE NAV HIGHLIGHT ON SCROLL ───────────────────────────── */
 (function() {
